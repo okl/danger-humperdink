@@ -5,29 +5,30 @@
   (:use compojure.core)
   (:require [compojure.handler :as handler]
             [compojure.route :as route])
-  (:require [roxxi.utils.print :refer [print-expr
-                                       print-prim]])
-  (:require [clojure.java.io :refer [reader]]))
+  (:require [roxxi.utils.print :refer [print-expr]])
+  (:require [clojure.java.io :refer [reader]])
+  (:require [clojure.tools.logging :as log])
+  (:require [humperdinck.data-log :as data-log]))
 
-(defn log [thing]
-  ;; log it
-  ;; return appropriate status code -- 200 or 500
-  (print-expr thing)
-  nil)
-
-
+(defn- build-log-response [successfully-logged]
+  (if successfully-logged
+    {:status 200
+     :headers {"Content-Type" "text/plain; charset=utf-8"}
+     :body "Log succeeded\n"}
+    {:status 500
+     :headers {"Content-Type" "text/plain; charset=utf-8"}
+     :body "Failed to log the entry\n"}))
 
 (defroutes app-routes
   (GET "/" [] "Hello World")
-  (POST "/log" {body :body} ;; TODO make this "/log/:service" [service] so you can provide a service-name
-    (let [successfully-logged (log (slurp body))]
-      (if successfully-logged
-        "Log succeeded"
-        {:status 500
-         :headers {"Content-Type" "text/html; charset=utf-8"}
-         :body "Failed to log the entry\n"})))
+  ;; TODO do we want a "/log" route, with no :service param?
+  (POST "/log/:service" [service :as {body :body}]
+    (let [successfully-logged (data-log/log service (slurp body))]
+      (build-log-response successfully-logged)))
   (route/resources "/")
   (route/not-found "Not Found"))
+
+
 
 (defn wrap-correct-content-type
   "This is a something of a hack.
@@ -53,7 +54,3 @@ uncommenting the call to (wrap-correct-content-type) in the app def below."
   (-> (handler/site app-routes)
       ;; (wrap-correct-content-type)
       ))
-
-;; TODO don't barf stacktraces when exceptions get thrown D: it ain't secure
-;; TODO document the fact that people MUST use content-type of application/json
-;;      or text/plain when calling this api.
