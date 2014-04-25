@@ -29,21 +29,30 @@
   (route/resources "/")
   (route/not-found "Not Found"))
 
-;; (defn wrap-correct-content-type
-;;   "This is a hack. The default content-type is NOT application/json,
-;; but rather application/www-form-urlencoded, which causes the body stream to
-;; be automatically parsed into a map of parameters, thus consuming the stream...
-;; so when I try and read it"
-;;   [handler]
-;;   (fn [request]
-;;     (handler (assoc request :content-type "application/json")))
-;;   identity)
+(defn wrap-correct-content-type
+  "This is a something of a hack.
 
-;; (def app
-;;   (-> (handler/site app-routes)
-;;       (wrap-correct-content-type)))
+The default content-type is NOT text/plain or application/json,
+but rather application/www-form-urlencoded, which causes the body stream to
+be automatically parsed into a map of parameters, thus consuming the stream...
+so when the app tries to read it in order to log it, it's already been consumed
+and there's nothing left to read and you get the empty string.
+
+In theory, people will hit this API with the correct content-type (probably
+application/json or text/plain). If they're not, and you want a server-side
+hack to accommodate them in their unhelpfulness, you can enable this by
+uncommenting the call to (wrap-correct-content-type) in the app def below."
+  [handler]
+  (fn [request]
+    (if (and (= "/log" (:uri request))
+             (= :post (:request-method request)))
+      (handler (assoc request :content-type "text/plain"))
+      (handler request))))
+
 (def app
-  (handler/site app-routes))
+  (-> (handler/site app-routes)
+      ;; (wrap-correct-content-type)
+      ))
 
 ;; TODO don't barf stacktraces when exceptions get thrown D: it ain't secure
 ;; TODO document the fact that people MUST use content-type of application/json
