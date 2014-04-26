@@ -8,7 +8,8 @@
                  [compojure "1.1.6"]
                  [clj-pid "0.1.1"]
                  [org.clojure/tools.logging "0.2.6"]
-                 [org.slf4j/slf4j-log4j12 "1.7.1"]]
+                 [org.slf4j/slf4j-log4j12 "1.7.1"]
+                 [clj-aws-s3 "0.3.9"]]
   :plugins [[lein-ring "0.8.10"]]
   :ring {:handler humperdinck.handler/app
          ;; :init thunk
