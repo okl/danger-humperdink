@@ -58,8 +58,7 @@
 (def cred
   ;; {:access-key "{{ ACCESS_KEY }}",
   ;;  :secret-key "{{ SECRET_KEY }}"}
-  {:access-key "...",
-   :secret-key "..."})
+  nil)
 (def service-name
   ;;"{{ SERVICE_NAME }}"
   )
@@ -97,17 +96,35 @@
                           (.getName file)])))
 
 (defn loaded-to-s3? [file]
-  (s3/object-exists? cred bucket (generate-s3-key file)))
+  (let [key (generate-s3-key file)
+        path (.getAbsolutePath file)]
+    (log/info (format "Checking if file %s has been uploaded to s3 under key %s" path key))
+    (if (s3/object-exists? cred bucket key)
+      (do
+        (log/info (format "Yes, file %s has been uploaded to s3 under key %s" path key))
+        true)
+      (do
+        (log/info (format "No, file %s has not been uploaded to s3 under key %s" path key))
+        false))))
 
 (defn upload-to-s3! [file]
   (let [key (generate-s3-key file)]
+    (log/info (format "Uploading file %s to key %s" (.getPath file) key))
     (if (> (.length file) threshold)
       (s3/put-multipart-object cred bucket key file :part-size part-size)
       (s3/put-object           cred bucket key file))))
 
 
+;; TODO enable me in prod
+(def delete-mode false)
+
 (defn delete! "on localhost's filesystem" [file]
-  (delete-file file))
+  (if delete-mode
+    (do
+      (log/info (format "Deleting file %s on localhost" (.getPath file)))
+      (delete-file file))
+    (do
+      (log/info (format "Delete mode is disabled; not deleting file %s" (.getPath file))))))
 
 
 (defn create-bucket-if-not-exists! [bucket]
@@ -120,6 +137,7 @@
 
 ;; # Main
 
+;; TODO need to check if the upload was successful - retry policy etc
 (defn -main []
   (binding [target-dir "./logs"
             target-file "tracking_api_data.log"]
@@ -128,7 +146,7 @@
       (compress! uncompressed))
     (doseq [compressed (rotated-compressed-files)]
       (if (loaded-to-s3? compressed)
-        nil;;(delete! compressed) ;;TODO enable me!
+        (delete! compressed)
         (upload-to-s3! compressed)))
     ))
 
@@ -142,3 +160,6 @@
   (clojure.pprint/pprint (rotated-uncompressed-files))
   (clojure.pprint/pprint (rotated-compressed-files)))
 (-main)
+
+
+;; TODO cron this with lein run -m ..., add this as main to project.clj
