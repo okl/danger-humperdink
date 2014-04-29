@@ -22,8 +22,13 @@
 (defroutes app-routes
   (GET "/" [] "Hello World")
   ;; TODO do we want a "/log" route, with no :service param?
-  (POST "/log/:service" [service :as {body :body}]
-    (let [successfully-logged (data-log/log service (slurp body))]
+  ;; (POST "/log/:service" [service :as {body :body}]
+  ;;   (let [successfully-logged (data-log/log service (slurp body))]
+  ;;     (build-log-response successfully-logged)))
+  (POST "/log/*" [:as {body :body, uri :uri}]
+    (let [rel-path (subs uri 5)
+          msg (slurp body)
+          successfully-logged (data-log/log rel-path msg)]
       (build-log-response successfully-logged)))
   (route/resources "/")
   (route/not-found "Not Found"))

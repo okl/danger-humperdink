@@ -13,7 +13,7 @@
 ;; # Globals, because sometimes it's just easier to do it that way
 
 (def ^:dynamic target-dir)
-(def ^:dynamic target-file)
+(def ^:dynamic target-fileglob)
 
 ;; # Helpers
 
@@ -24,11 +24,17 @@
     (file f-or-str)
     f-or-str))
 
+(defn- rel-path [f-or-str]
+  (let [f (fileify f-or-str)
+        path (.getPath f)
+        basedir-regex (re-pattern (str target-dir "/"))]
+    (clojure.string/replace-first path basedir-regex "")))
+
 (defn- ls-recursive [dir]
   (file-seq (fileify dir)))
 
 (defn- target-path []
-  (format "%s/%s" target-dir target-file))
+  (format "%s/%s" target-dir target-fileglob))
 
 (defn- make-rotated-uncompressed-regex []
   (re-pattern (str (target-path) "\\..+")))
@@ -58,7 +64,7 @@
 (def cred
   ;; {:access-key "{{ ACCESS_KEY }}",
   ;;  :secret-key "{{ SECRET_KEY }}"}
-  nil)
+  )
 (def service-name
   ;;"{{ SERVICE_NAME }}"
   )
@@ -69,31 +75,50 @@
 (def threshold (* 5 1024 1024 1024))
 (def part-size (* 1024 1024 1024))
 
+(defn- make-date-extracty-regex []
+  (re-pattern (str ".+log"
+                   "\\."
+                   ;;"(\\d{4,4})-(\\d{2,2})-(\\d{2,2})-(\\d{2,2})" ;;hours
+                   "(\\d{4,4})-(\\d{2,2})-(\\d{2,2})-(\\d{2,2})-(\\d{2,2})" ;;minutes
+                   "\\.gz")))
 (defn- generate-s3-key [file]
   (let [filepath (.getPath file)
-        regex (re-pattern (str target-dir "/" target-file "."
-                               "(\\d{4,4})-(\\d{2,2})-(\\d{2,2})-(\\d{2,2})"
-                               ".gz"))
-        regex-matches (re-find regex filepath)
-        [_ year month day hour] regex-matches
+        regex (make-date-extracty-regex)
+        rel (rel-path file)
+        regex-matches (re-find regex rel)
+        ;;[_ year month day hour] regex-matches
+        [_ year month day hour min] regex-matches
         envt ;;"{{ ENVT }}"
-               "TEST"
+        "TEST"
         servername (.getHostName (java.net.InetAddress/getLocalHost))
         pid (pid/current)]
-    (when (not= 5 (count regex-matches))
-      (throw
-       (RuntimeException.
-        (format "Regex didn't match: filepath was %s, regex-matches was %s"
-                filepath regex-matches))))
-    (clojure.string/join "/"
-                         [year
-                          month
-                          day
-                          hour
-                          envt
-                          servername
-                          pid
-                          (.getName file)])))
+    ;;(if (not= 5 (count regex-matches))
+    (if (not= 6 (count regex-matches))
+      (do
+        (log/info (format "Regex didn't match: rel was %s, regex was %s, regex-matches was %s"
+                          filepath regex regex-matches))
+        nil)
+      (clojure.string/join "/"
+                           [year
+                            month
+                            day
+                            ;;hour
+                            hour min
+                            envt
+                            servername
+                            pid
+                            rel]))))
+
+(defn- know-how-to-load-to-s3? [file]
+  (log/info (format "Checking if know how to upload file %s to S3" file))
+  (let [know-how (not (nil? (generate-s3-key file)))]
+    (if know-how
+      (do
+        (log/info (format "Know how to load file %s to S3" file))
+        true)
+      (do
+        (log/info (format "Don't know how to load file %s to S3" file))
+        false))))
 
 (defn loaded-to-s3? [file]
   (let [key (generate-s3-key file)
@@ -108,11 +133,14 @@
         false))))
 
 (defn upload-to-s3! [file]
-  (let [key (generate-s3-key file)]
-    (log/info (format "Uploading file %s to key %s" (.getPath file) key))
+  (let [key (generate-s3-key file)
+        path (.getAbsolutePath file)]
+    (log/info (format "Uploading file %s to key %s" path key))
     (if (> (.length file) threshold)
-      (s3/put-multipart-object cred bucket key file :part-size part-size)
-      (s3/put-object           cred bucket key file))))
+      (do
+        (log/info (format "Uploading file %s as multipart upload" path))
+        (s3/put-multipart-object cred bucket key file :part-size part-size))
+      (s3/put-object cred bucket key file))))
 
 
 ;; TODO enable me in prod
@@ -140,14 +168,15 @@
 ;; TODO need to check if the upload was successful - retry policy etc
 (defn -main []
   (binding [target-dir "./logs"
-            target-file "tracking_api_data.log"]
+            target-fileglob ".+\\.log"]
     (create-bucket-if-not-exists! bucket)
     (doseq [uncompressed (rotated-uncompressed-files)]
       (compress! uncompressed))
     (doseq [compressed (rotated-compressed-files)]
-      (if (loaded-to-s3? compressed)
-        (delete! compressed)
-        (upload-to-s3! compressed)))
+      (when (know-how-to-load-to-s3? compressed)
+        (if (loaded-to-s3? compressed)
+          (delete! compressed)
+          (upload-to-s3! compressed))))
     ))
 
 ;; # Testing code
@@ -155,7 +184,7 @@
 (println "================================================================================")
 (println "JUST EVALED AGAIN")
 (binding [target-dir "./logs"
-          target-file "tracking_api_data.log"]
+          target-fileglob ".+\\.log"]
   (clojure.pprint/pprint (ls-recursive target-dir))
   (clojure.pprint/pprint (rotated-uncompressed-files))
   (clojure.pprint/pprint (rotated-compressed-files)))
