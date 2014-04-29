@@ -1,10 +1,41 @@
 # humperdinck
 
-A Clojure library designed to ... well, that part is up to you.
+Tracking API, inspired by The Princess Bride -- it can track a falcon on a cloudy day!
 
 ## Usage
 
-FIXME
+### PART 1: Webserver for writing arbitrary strings to arbitrary filepaths
+
+In a terminal, cd to the project dir and run `lein ring
+server-headless`. That should start this webserver on your dev env.
+
+Now you can POST to localhost:3000 with ANY arbitrary URL under
+`/log`, and it will write your HTTP body as a line in a logfile with
+relative path corresponding to the URL.
+
+E.g. You can POST the body `{"key": "this will appear as a log line in
+a file somewhere"}` to the URL
+`http://localhost:3000/log/arbitrary/path/begins/here`, and the entire
+JSON string will get logged to the file
+`./logs/arbitrary/path/begins/here.log`.
+
+These logfiles will be rotated out hourly (current code state is
+minutely for dev purposes).
+
+
+
+NB: Make sure you use content-type header value of `application/json`
+or `text/plain`.
+
+### PART 2: Automatically uploading rotated logfiles to Amazon S3
+
+Spin up a repl and run `upload-rotated-files/-main` method. This
+will recursively search the logs directory for files that have been
+rotated out, compress them with gzip, upload them to Amazon S3, and
+(if delete mode is enabled) delete them from the localhost.
+
+In practice, this would be cronned to run hourly.
+
 
 ## License
 
