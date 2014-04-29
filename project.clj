@@ -1,4 +1,4 @@
-(defproject humperdinck "0.1.0-SNAPSHOT"
+(defproject com.onekingslane.danger/humperdinck "0.1.0-SNAPSHOT"
   :description "Tracking API -- it can track a falcon on a cloudy day!"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
