@@ -1,4 +1,4 @@
-(defproject com.onekingslane.danger/humperdinck "0.1.0-SNAPSHOT"
+(defproject com.onekingslane.danger/humperdink "0.1.0-SNAPSHOT"
   :description "Tracking API -- it can track a falcon on a cloudy day!"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
@@ -11,7 +11,7 @@
                  [org.slf4j/slf4j-log4j12 "1.7.1"]
                  [clj-aws-s3 "0.3.9"]]
   :plugins [[lein-ring "0.8.10"]]
-  :ring {:handler humperdinck.handler/app
+  :ring {:handler humperdink.handler/app
          ;; :init thunk
          ;; :destroy thunk
          ;; :adapter options-map

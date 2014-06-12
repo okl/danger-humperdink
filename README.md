@@ -1,4 +1,4 @@
-# humperdinck
+# humperdink
 
 Tracking API, inspired by The Princess Bride -- it can track a falcon on a cloudy day!
 

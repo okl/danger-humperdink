@@ -1,4 +1,4 @@
-(ns humperdinck.get-logger
+(ns humperdink.get-logger
   "Dynamically create new log4j Loggers"
   {:author "Matt Halverson"
    :date "2014/04/29"}
@@ -36,11 +36,11 @@
 ;; if you make a logger with the same name twice, you will get back the same
 ;; object
 ;;
-;; humperdinck.create-logger> (make-rolling-logger "a" "/tmp/a")
+;; humperdink.create-logger> (make-rolling-logger "a" "/tmp/a")
 ;; #<Logger org.apache.log4j.Logger@623b5968>
-;; humperdinck.create-logger> (make-rolling-logger "a" "/tmp/a")
+;; humperdink.create-logger> (make-rolling-logger "a" "/tmp/a")
 ;; #<Logger org.apache.log4j.Logger@623b5968>
-;; humperdinck.create-logger> (make-rolling-logger "a" "/tmp/b")
+;; humperdink.create-logger> (make-rolling-logger "a" "/tmp/b")
 ;; #<Logger org.apache.log4j.Logger@623b5968>
 
 (defn make-rolling-logger
@@ -57,22 +57,22 @@
 ;;     but how to destroy when evicting from the cache?
 ;; test with lsof?
 ;;
-;; YES -- lsof | grep "humperdinck" | less
+;; YES -- lsof | grep "humperdink" | less
 ;;
-;; (def a (make-rolling-logger "a" "/Users/mhalverson/Code/okl/humperdinck/logs/lsof_test.log"))
+;; (def a (make-rolling-logger "a" "/Users/mhalverson/Code/okl/humperdink/logs/lsof_test.log"))
 ;; (comment "lsof reveals the open file handle")
 ;; (.removeAllAppenders a)
 ;; (comment "lsof reveals that the file handle is now closed")
 ;; (.info a "shouldn't write")
-;; (def a (make-rolling-logger "a" "/Users/mhalverson/Code/okl/humperdinck/logs/lsof_test.log"))
+;; (def a (make-rolling-logger "a" "/Users/mhalverson/Code/okl/humperdink/logs/lsof_test.log"))
 ;; (comment "lsof reveals the open file handle again :)")
 ;; (.info a "should write")
 ;; (.info a "and it totally wrote")
 
 
-;; (def l1 (make-rolling-logger "matt.test" "/Users/mhalverson/Code/okl/humperdinck/logs/does_it_work2.log"))
+;; (def l1 (make-rolling-logger "matt.test" "/Users/mhalverson/Code/okl/humperdink/logs/does_it_work2.log"))
 ;; (.info l1 "omfg this totally works")
-;; (def l2 (make-rolling-logger "matt.other_test" "/Users/mhalverson/Code/okl/humperdinck/logs/does_it_work_no_activate_options.log"))
+;; (def l2 (make-rolling-logger "matt.other_test" "/Users/mhalverson/Code/okl/humperdink/logs/does_it_work_no_activate_options.log"))
 ;; (.info l2 "even without activating options")
 
 
