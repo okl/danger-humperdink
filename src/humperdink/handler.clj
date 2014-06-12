@@ -1,4 +1,4 @@
-(ns humperdinck.handler
+(ns humperdink.handler
   "Tracking API"
   {:author "Matt Halverson"
    :date "2014/04/25"}
@@ -8,7 +8,7 @@
   (:require [roxxi.utils.print :refer [print-expr]])
   (:require [clojure.java.io :refer [reader]])
   (:require [clojure.tools.logging :as log])
-  (:require [humperdinck.data-log :as data-log]))
+  (:require [humperdink.data-log :as data-log]))
 
 (defn- build-log-response [successfully-logged]
   (if successfully-logged

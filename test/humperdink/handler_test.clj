@@ -1,9 +1,9 @@
-(ns humperdinck.handler_test
+(ns humperdink.handler_test
   {:author "Matt Halverson"
    :date "2014/04/25"}
   (:use clojure.test
         ring.mock.request)
-  (:require [humperdinck.handler :refer [app]]))
+  (:require [humperdink.handler :refer [app]]))
 
 (deftest test-app
   (testing "main route"
