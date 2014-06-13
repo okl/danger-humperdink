@@ -32,9 +32,9 @@
     (.activateOptions) ;; NB `activateOptions` will create an empty file to append to, if no logfile exists.
     ))
 
-;; TODO what is the interplay between logger-name and appender-filepath?
-;; if you make a logger with the same name twice, you will get back the same
-;; object
+;; Q: What is the interplay between logger-name and appender-filepath?
+;; A: If you make a logger with the same name twice, you will get back the same
+;;     object
 ;;
 ;; humperdink.create-logger> (make-rolling-logger "a" "/tmp/a")
 ;; #<Logger org.apache.log4j.Logger@623b5968>
