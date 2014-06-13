@@ -1,0 +1,65 @@
+Event Intake Mechanism:
+
+TCP/IP
+AMQP
+HTTP		Routes		Route-fn reg	Data Transforms f(r,d)->d (may have side effects!)
+
+Routes-fn registry:
+/foo/bar	 => fn'
+/foo		 => fn''
+/foo/bar/baz	 => default-fn
+/baz		 => default-fn
+/bar/*		 => default-fn
+/bar/*/baz/*	 => fn'''
+
+The fns/transforms are Jawsome.
+Humperdink pipeline is route/fn pairings!
+
+What OOB fns do we need?
+ - log to file (bc dev env)
+ - log to S3 (need to buffer :-/ but that should be transparent!)
+ - push to AMQP
+ - Jawsome
+
+
+
+Use cases?
+ - Yoda prod
+ - Yoda QA/INT instances
+ - Flash Report tracking
+ - Elysium Tracking
+ - Mobile Tracking P/Q/I/D
+ - Mobile Beacons (Proxies) P/Q/I/D
+ - Beastload status & events
+ - Beastform events
+
+Features:
+ - Vagrant deployable
+ - Many instances
+
+Humperdink is simple -- needs other tools to be interesting:
+ - Unicron
+ - BLaaS
+
+       Humperdink
+      /         \
+    AMPQ        S3
+     |         /   \
+   Storm   Unicron ???? *
+      \        |  /
+       \      BLaaS
+        \     /
+        Vertica
+
+
+*<- "Oh look a route! Someone told me this data should go in a table. I should tell Unicron." or "I see a route matching this table, let's dump there. Here are static transforms to add new fields."
+
+
+
+
+
+
+HTTP: get for free with (def app ...) and {... :ring {:handler humperdink.handler/app ...}}
+ROUTES: declaratively create from route-fn registry?
+ROUTE-FN REG: this is the meat of Humperdink.
+DATA TRANSFORMS: define in a separate file(?) vs define directly in the route-fn reg(?)
