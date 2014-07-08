@@ -5,13 +5,15 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [com.onekingslane.danger/clojure-common-utils "0.0.24"]
+                 [com.onekingslane.danger/jawsome-dsl "1.3.0"]
                  [compojure "1.1.6"]
                  [clj-pid "0.1.1"]
                  [org.clojure/tools.logging "0.2.6"]
                  [org.slf4j/slf4j-log4j12 "1.7.1"]
                  [clj-aws-s3 "0.3.9"]]
   :plugins [[lein-ring "0.8.10"]]
-  :ring {:handler humperdink.handler/app
+  :ring {:handler humperdink.pipeline/route-fn-registry
+         ;; :handler humperdink.handler/app
          ;; :init thunk
          ;; :destroy thunk
          ;; :adapter options-map
