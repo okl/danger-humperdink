@@ -1,0 +1,48 @@
+Three concepts:
+
+Routes
+Actions (+Pipelines)
+ - ActionResults
+ - Env
+
+--------------------------------------------------------------------------------
+
+Set of actions:
+ - constructed "raw" or by referencing other actions
+ - simple (raw), composite (linear, raw or refing other simples/composites), branched (forked -- each poath is executed independently of other paths)
+ - Action has a return value + an env
+
+invoke action :: (action x env) => (x' env')
+interpret action :: (action ActionResult env) => (AR env)
+
+x + env is what's useful for the writer of the action
+AR - x is what's useful for debugging/auditing at the interpreter -- individual statuses/messages/stacktraces from each action
+
+
+
+
+Actions (+ Pipelines) need env passed around with them (e.g. what route triggered it)
+
+Eventually want query params to modify pipelines! /foo?x=test&disable=___&only=___&action=___
+
+Interpreter should have a 'recur' action for internal rerouting purposes :) Recur w different route, of course
+
+(pipeline [x]       <- branched
+  (-> (a1 ...)      <- composite
+      (a2 ...)      <- simple
+      (      ))
+  (-> (a3 ...)
+      (a4 ...)
+      (      )))
+
+(defprotocol Env
+  (route ))
+(defprotocol Action
+  (value )
+  (env))
+(defprotocol ActionResult
+  (value )
+  (env )
+  (message ))
+
+Want to be able to print out ActionResult tree at any given point in time

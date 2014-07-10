@@ -1,7 +1,6 @@
-Event Intake Mechanism:
+Humperdink is an Event Intake Mechanism.
+Humperdink is a router!
 
-TCP/IP
-AMQP
 HTTP		Routes		Route-fn reg	Data Transforms f(r,d)->d (may have side effects!)
 
 Routes-fn registry:
@@ -12,16 +11,18 @@ Routes-fn registry:
 /bar/*		 => default-fn
 /bar/*/baz/*	 => fn'''
 
-The fns/transforms are Jawsome.
-Humperdink pipeline is route/fn pairings!
+The fns/transforms are (possibly composite) actions.
+The meat of a Humperdink instance is route/fn pairings!
 
-What OOB fns do we need?
+What OOB actions do we need?
+ - Jawsome xforms
  - log to file (bc dev env)
  - log to S3 (need to buffer :-/ but that should be transparent!)
  - push to AMQP
- - Jawsome
-
-
+ - post to http
+ - increment a counter in redis somehow.
+ - self re-routing (simplest impl is to use 'post to http' on localhost)
+NB the logging/pushing/posting ones should all be identity-with-a-side-effect -- they should return the raw event possibly enriched with metadata
 
 Use cases?
  - Yoda prod
@@ -60,6 +61,6 @@ Humperdink is simple -- needs other tools to be interesting:
 
 
 HTTP: get for free with (def app ...) and {... :ring {:handler humperdink.handler/app ...}}
-ROUTES: declaratively create from route-fn registry?
+ROUTES: declaratively create from route-fn registry
 ROUTE-FN REG: this is the meat of Humperdink.
 DATA TRANSFORMS: define in a separate file(?) vs define directly in the route-fn reg(?)
