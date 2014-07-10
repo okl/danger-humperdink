@@ -1,4 +1,4 @@
-(ns humperdink.upload-rotated-files
+(ns humperdink.actions.upload-rotated-files
   "Looks for rotated log-files and uploads them to Amazon S3"
   {:author "Matt Halverson"
    :date "2014/04/25"}

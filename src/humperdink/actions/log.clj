@@ -1,4 +1,4 @@
-(ns humperdink.fns
+(ns humperdink.actions.log
   "Extend jawsome with some useful humperdink fns"
   {:author "Matt Halverson"
    :date "2014/06/13"}
@@ -7,7 +7,7 @@
   (:require [clojure.tools.logging :as log])
   (:require [jawsome-dsl.xform :refer [defvar defxform]]
             [jawsome-dsl.denorm :refer [denorm-phase-sexprs->fn default-env]])
-  (:require [humperdink.data-log :refer [log]]))
+  (:require [humperdink.actions.data-log :refer [log]]))
 
 ;; (defn replace-newlines-with-spaces [m]
 ;;   (walk-update-scalars m

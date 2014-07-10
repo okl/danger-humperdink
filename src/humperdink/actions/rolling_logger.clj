@@ -1,4 +1,4 @@
-(ns humperdink.get-logger
+(ns humperdink.actions.rolling-logger
   "Dynamically create new log4j Loggers"
   {:author "Matt Halverson"
    :date "2014/04/29"}

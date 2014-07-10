@@ -1,11 +1,11 @@
-(ns humperdink.data-log
+(ns humperdink.actions.data-log
   "Special ns in which all the log statements will write to a special separate log file"
   {:author "Matt Halverson"
    :date "2014/04/25"}
   (:require [roxxi.utils.print :refer [print-expr
                                        print-prim]])
   (:require [clojure.tools.logging :as log])
-  (:require [humperdink.get-logger :refer [get-logger]])
+  (:require [humperdink.actions.rolling-logger :refer [get-logger]])
   (:require [clj-pid.core :as pid]))
 
 ;; TODO move host/pid calculation to the lein-server-startup thunk.
