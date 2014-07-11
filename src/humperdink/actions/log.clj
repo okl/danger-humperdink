@@ -6,8 +6,7 @@
             [roxxi.utils.common :refer [def-]])
   (:require [clojure.tools.logging :as log])
   (:require [jawsome-dsl.xform :refer [defvar defxform]]
-            [jawsome-dsl.denorm :refer [denorm-phase-sexprs->fn default-env]])
-  (:require [humperdink.actions.data-log :refer [log]]))
+            [jawsome-dsl.denorm :refer [denorm-phase-sexprs->fn default-env]]))
 
 ;; (defn replace-newlines-with-spaces [m]
 ;;   (walk-update-scalars m
@@ -40,6 +39,9 @@
 
 (defn log-to-disk [m path]
   (spit path (newlineify m) :append true))
+
+(defn make-log-to-disk [path]
+  #(log-to-disk % path))
 
 (defn log-to-disk-handler [req]
   ;; XXX do some path checking here... don't let ppl write to arbitrary paths
