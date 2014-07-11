@@ -6,6 +6,7 @@
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [com.onekingslane.danger/clojure-common-utils "0.0.24"]
                  [com.onekingslane.danger/jawsome-dsl "1.3.0"]
+                 [com.onekingslane.danger/diesel "1.0.3"]
                  [compojure "1.1.6"]
                  [clj-pid "0.1.1"]
                  [org.clojure/tools.logging "0.2.6"]
