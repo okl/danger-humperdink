@@ -8,24 +8,24 @@
   (:require [diesel.core :refer [definterpreter]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def- act-reg (atom {}))
+(def- act-maker-reg (atom {}))
 
-(defn defaction
-  "fxn-maker takes some initialization args (possibly none) and returns a
+(defn defactionmaker
+  "act-maker takes some initialization args (possibly none) and returns a
 function that takes exactly two args: the input value to operate on, and
 an environment.
 
 Haskell-style type signature:
-fxn-maker :: [initialization args] -> (input -> env -> output)
+act-maker :: [initialization args] -> (input -> env -> output)
 "
-  [name fxn-maker]
-  (when (contains? @act-reg name)
-    (log/warnf "Attempting to overwrite already defined action %s" name))
-  (swap! act-reg #(assoc % name fxn-maker)))
+  [name act-maker]
+  (when (contains? @act-maker-reg name)
+    (log/warnf "Attempting to overwrite already defined var %s" name))
+  (swap! act-maker-reg #(assoc % name act-maker)))
 
-(def defvar defaction)
+(def defvar defactionmaker)
 
-(defn action-registry [] @act-reg)
+(defn action-maker-registry [] @act-maker-reg)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn- seqify [thing]
@@ -88,6 +88,9 @@ value* is short hand for a sequence of 0 or more values
     (comp seqify action)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Playing around with syntax
+
 (def main-action
   '(-> (jawsome-xform-99 (ref init-arg-99))
        (|| (-> (jawsome-xform-1 init-arg-1 init-arg-2)
@@ -103,44 +106,50 @@ value* is short hand for a sequence of 0 or more values
                           (echo-to-console)
                           (log-to-disk path)))))
 
+;; Test some basics!
+
+;; Simple action
+
 (do
-  (defaction 'jawsome-xform-99
+  (defactionmaker 'jawsome-xform-99
     (fn [init-arg]
       (fn [val env] (str val " " init-arg " " env))))
   (defvar 'init-arg-99 "nevergonnagiveyouup")
   (def p1 (interp '(jawsome-xform-99 ["going home" (+ 2 2)])
-                  (action-registry)))
+                  (action-maker-registry)))
   (p1 42 {}))
 
-(interp main-action (action-registry))
+;; Parallel action
 
 (do
-  (defaction 'print-1
+  (defactionmaker 'print-1
     (fn []
       (fn [val env]
         (println (str "gooo print-1, value is " val "!"))
         val)))
-  (defaction 'print-2
+  (defactionmaker 'print-2
     (fn []
       (fn [val env]
         (println (str "huzzah print-2, value is " val "!"))
         (* val 2))))
   (def p2 (interp '(|| (print-1)
                        (print-2))
-                  (action-registry)))
+                  (action-maker-registry)))
   (p2 42 {}))
 
+;; Composite action
+
 (do
-  (defaction 'inc
+  (defactionmaker 'inc
     (fn []
       (fn [val env]
         (inc val))))
-  (defaction 'log
+  (defactionmaker 'log
     (fn []
       (fn [val env]
         (println (str "val is " val))
         val)))
-  (defaction 'double
+  (defactionmaker 'double
     (fn []
       (fn [val env]
         (* val 2))))
@@ -149,5 +158,5 @@ value* is short hand for a sequence of 0 or more values
                        (log)
                        (inc)
                        (log))
-                  (action-registry)))
+                  (action-maker-registry)))
   (p3 16 {}))
