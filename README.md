@@ -2,7 +2,31 @@
 
 Tracking API, inspired by The Princess Bride -- it can track a falcon on a cloudy day!
 
-## Usage
+## Pre-reqs for developers
+
+1. Install leiningen (version 2 or higher)
+2. Create the file ~/.lein/init.clj with the contents as follows:
+
+    (def lein-beanstalk-credentials
+      {:access-key "YOUR-ACCESS-KEY"
+       :secret-key "YOUR-SECRET-KEY"})
+
+Now you can deploy with `lein beanstalk deploy devel`. This will
+create the elastic beanstalk app if it doesn't exist, or update it if
+it does.
+
+
+## Modes of development
+
+1. Local development mode
+
+`lein ring server`
+
+2. AWS Elastic Beanstalk
+
+`lein beanstalk deploy devel` (or stage, or prod)
+
+## Overview
 
 ### PART 1: Webserver for writing arbitrary strings to arbitrary filepaths
 
