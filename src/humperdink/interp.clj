@@ -59,6 +59,7 @@ value* is short hand for a sequence of 0 or more values
         (seqify results)
         (recur (mapcat #((first actions) % env) results)
                (rest actions))))))
+
 (defmethod interp :sequence [[_ & exprs] reg]
   (println "called sequence")
   (let [interped (map #(interp % reg) exprs)
@@ -80,6 +81,8 @@ value* is short hand for a sequence of 0 or more values
   (println "called ref")
   (get reg name))
 
+;; XXX here is where to honor "only" and "disable" options.
+;; XXX here is where to honor "log every step" option?
 (defmethod interp :simple-action [[name & init-args] reg]
   (println "called simple-action")
   (let [fxn-maker (get reg name)
@@ -115,7 +118,7 @@ value* is short hand for a sequence of 0 or more values
     (fn [init-arg]
       (fn [val env] (str val " " init-arg " " env))))
   (defvar 'init-arg-99 "nevergonnagiveyouup")
-  (def p1 (interp '(jawsome-xform-99 ["going home" (+ 2 2)])
+  (def p1 (interp '(jawsome-xform-99 ["going back down to Georgia" (+ 2 2)])
                   (action-maker-registry)))
   (p1 42 {}))
 
@@ -143,20 +146,38 @@ value* is short hand for a sequence of 0 or more values
   (defactionmaker 'inc
     (fn []
       (fn [val env]
+;;        [(inc val) env])))
         (inc val))))
   (defactionmaker 'log
     (fn []
       (fn [val env]
         (println (str "val is " val))
+;;        [val env])))
         val)))
   (defactionmaker 'double
     (fn []
       (fn [val env]
+;;        [(* val 2) env])))
         (* val 2))))
+  (defactionmaker 'mult
+    (fn [factor]
+      (fn [val env]
+;;        [(* val factor) env])))
+        (* val factor))))
   (def p3 (interp '(-> (log)
                        (double)
+                       (log)
+                       (mult 5)
                        (log)
                        (inc)
                        (log))
                   (action-maker-registry)))
-  (p3 16 {}))
+  (p3 16 {})
+  (defactionmaker 'p3
+    (constantly p3))
+  (def p4 (interp '(-> (log)
+                       (p3)
+                       (mult 10)
+                       (log))
+                  (action-maker-registry)))
+  (p4 16 {}))
