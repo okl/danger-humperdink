@@ -1,4 +1,4 @@
-Three concepts:
+Concepts:
 
 Routes
 Actions (+Pipelines)
@@ -9,7 +9,7 @@ Actions (+Pipelines)
 
 Set of actions:
  - constructed "raw" or by referencing other actions
- - simple (raw), composite (linear, raw or refing other simples/composites), branched (forked -- each poath is executed independently of other paths)
+ - simple (raw), composite (linear, raw or refing other simples/composites), branched (forked -- each path is executed independently of other paths)
  - Action has a return value + an env
 
 invoke action :: (action x env) => (x' env')
@@ -46,3 +46,27 @@ Interpreter should have a 'recur' action for internal rerouting purposes :) Recu
   (message ))
 
 Want to be able to print out ActionResult tree at any given point in time
+
+
+--------------------------------------------------------------------------------
+Roadmap
+1) Accept everything, fill up s3 buckets endlessly
+ --lifecycle of the code (dev, test, deploy, iterate)
+ --ingestion mechanism
+2) Route based on environment (dev, qa, prod...)
+3) Build the missing pieces to route prod into Vertica (hourly)
+
+
+Where to start?
+1) Build mechanism to deploy a jar to elastic beanstalk
+2) Interpreter + pipeline + actions + action results?
+--------------------------------------------------------------------------------
+Technical considerations:
+
+Consider using a queue
+- zeromq
+- rabbitmq
+- sqs
+
+Consider using a Message Bus / Service Bus
+- mule

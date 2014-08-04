@@ -16,11 +16,17 @@ The meat of a Humperdink instance is route/fn pairings!
 
 What OOB actions do we need?
  - Jawsome xforms
+ - log to stdout
  - log to file (bc dev env)
  - log to S3 (need to buffer :-/ but that should be transparent!)
  - push to AMQP
  - post to http
  - increment a counter in redis somehow.
+ - conditional action based on schema
+       Want to be able to specify a transform that:
+        -you specify a schema (json schema)
+        -if the input matches the schema, do X
+        -if the input doesn't match, do Y
  - self re-routing (simplest impl is to use 'post to http' on localhost)
 NB the logging/pushing/posting ones should all be identity-with-a-side-effect -- they should return the raw event possibly enriched with metadata
 
