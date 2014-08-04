@@ -27,4 +27,5 @@
          ;; :adapter options-map
          }
   :profiles {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
-                                  [ring-mock "0.1.5"]]}})
+                                  [ring-mock "0.1.5"]
+                                  [com.onekingslane.danger/denormal "1.0.1"]]}})
