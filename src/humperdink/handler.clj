@@ -8,7 +8,7 @@
   (:require [roxxi.utils.print :refer [print-expr]])
   (:require [clojure.java.io :refer [reader]])
   (:require [clojure.tools.logging :as log])
-  (:require [humperdink.data-log :as data-log]))
+  (:require [humperdink.actions.data-log :as data-log]))
 
 (defn- build-log-response [successfully-logged]
   (if successfully-logged
