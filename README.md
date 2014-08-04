@@ -22,6 +22,8 @@ it does.
 
 `lein ring server`
 
+Test with curl: `curl --data '{"a" [1,2,3], "b" 42}' http://localhost:3000/foo --header "Content-Type:application/json"`
+
 2. AWS Elastic Beanstalk
 
 `lein beanstalk deploy devel` (or stage, or prod)
