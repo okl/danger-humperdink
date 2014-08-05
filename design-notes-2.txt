@@ -70,3 +70,9 @@ Consider using a queue
 
 Consider using a Message Bus / Service Bus
 - mule
+--------------------------------------------------------------------------------
+First noble goal:
+- bash script hits the api with a bunch of log lines, one at a time
+- yodaetl transform on them
+- output to s3
+- load in 5-min chunks to vertica
