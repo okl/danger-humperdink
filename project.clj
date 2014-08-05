@@ -28,4 +28,6 @@
          }
   :profiles {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                                   [ring-mock "0.1.5"]
-                                  [com.onekingslane.danger/denormal "1.0.1"]]}})
+                                  [com.onekingslane.danger/denormal "1.0.1"]
+                                  [okl/yodaetl "1.4.22"]
+                                  [okl/yodaetl-hadoop "1.4.22"]]}})

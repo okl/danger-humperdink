@@ -10,40 +10,30 @@
             [roxxi.utils.common :refer [def-]])
   (:require [clojure.tools.logging :as log])
   (:require [humperdink.actions.log :refer [log-to-disk-handler
-                                            make-log-to-disk]]))
+                                            make-log-to-disk]]
+            [humperdink.action :refer [invoke
+                                       ->Env
+                                       ->ActionInput]])
+  (:use humperdink.actions.out-of-the-box))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(def- act-reg (atom {}))
-
-(defn defaction
-  [name act]
-  (when (contains? @act-reg name)
-    (log/warnf "Attempting to overwrite already defined action %s" name))
-  (swap! act-reg #(assoc % name act)))
-
-(defn action-registry [] @act-reg)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;(defaction )
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; (defn std-wrapper [fxn]
-;;   (fn [request & args]
-;;     (let [body (get :body request)]
-;;       (apply fxn (list* body args)))))
 
 (defn- parse-rf-pair [rf-pair]
   (let [path (first rf-pair)
-        fxn (last rf-pair)]
-    `(POST ~path req# (let [slurped# (assoc req# :body (slurp (get req# :body)))]
-                        (apply ~fxn (list slurped#))))))
-;; wrap the fxn binding the uri and any headers? maybe, but it feels odd
-;; make humperdink functions take a request and destructure it? <-- THIS ONE!
-
-
+        action (last rf-pair)]
+    `(POST ~path req# (let [body# (slurp (get req# :body))
+                            slurped# (assoc req# :body body#)
+                            route# (get req# :uri)
+                            custom-fields# {}
+                            env# (->Env route# custom-fields#)
+                            input# (->ActionInput body# env#)
+                            output# (invoke ~action input#)
+                            outputs# (map #(:output %) output#)
+                            ]
+                        ;;(with-out-str (print-expr req#))
+                        ;;(with-out-str (print-expr output#))
+                        (with-out-str (clojure.pprint/pprint outputs#))
+                        ))))
 
 ;; Still need to add `:ring {:handler humperdink.pipeline/~name}` to project.clj
 ;;               and `:plugins [[lein-ring "0.8.10"]]`
@@ -82,6 +72,20 @@
 (def route-fn-registry
   (-> (handler/site r2)
       (wrap-stacktrace)))
-;; (defpipeline playing-with-syntax-more
-;;   [["/log-to-disk" => (make-log-to-disk "/tmp/foo")]
-;;    ["/pipeline1" => p1]])
+
+
+(defpipeline route-fn-registry
+  [["/foo" => basic-jaw]
+   ["/yoda" => yodaetl]])
+
+;; There exists a route->action table
+;; Interpreter has access to master route->action table
+;;  -> first step is generic: look up action for route
+;;  -> then interpret the value using that action
+;;  -> the action may be composite, end with a "re-route" step
+;;               ALTERNATIVELY
+;; An action may be composite, end with a reference to another (possibly composite) action
+;;               ALTERNATIVELY
+;; Two-level interpreter
+;;  -> inner level builds up a single giant function
+;;  -> outer level picks the function to execute, 

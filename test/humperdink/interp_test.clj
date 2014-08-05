@@ -16,6 +16,7 @@
                                        ->ActionOutput
                                        ->Env
                                        seqify]])
+  (:use humperdink.actions.out-of-the-box)
   (:require [denormal.core :refer [denormalize-map]]))
 
 
@@ -23,12 +24,6 @@
 
 (defn- make-o [output env]
   (->ActionOutput output env))
-
-(defactionmaker 'log
-  (fn []
-    (->Action (fn [val env]
-                (println (str "val is " val ", env is " env))
-                [val env]))))
 
 ;; Test some basics!
 
