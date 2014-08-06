@@ -16,6 +16,7 @@
                                        defvar
                                        interp
                                        action-maker-registry]])
+  (:require [humperdink.actions.write-to-s3 :refer [add-to-s3-buffer]])
   (:require [denormal.core :refer [denormalize-map]])
   (:require [yodaetl.transform :as yoda]
             [yodaetl-hadoop.config :as yodacfg]))
@@ -26,6 +27,12 @@
   (fn []
     (->Action (fn [val env]
                 (println (str "val is " val ", env is " env))
+                [val env]))))
+
+(defactionmaker 'write-to-s3
+  (fn []
+    (->Action (fn [val env]
+                (add-to-s3-buffer val (:route env))
                 [val env]))))
 
 ;; Just for now
@@ -58,4 +65,6 @@
                            val-env-pairs (map #(vector % env) vals)]
                        val-env-pairs)))))
 
-(def yodaetl (interp '(yodaetl) (action-maker-registry)))
+(def yodaetl (interp '(-> (yodaetl)
+                          (write-to-s3))
+                     (action-maker-registry)))
