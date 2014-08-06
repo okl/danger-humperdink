@@ -28,7 +28,7 @@ act-maker :: [initialization args] -> ActionP
   [name act-maker]
   (when (contains? @act-maker-reg name)
     (log/warnf "Attempting to overwrite already defined var %s" name))
-  (swap! act-maker-reg #(assoc % name act-maker)))
+  (swap! act-maker-reg assoc name act-maker))
 
 (def defvar defactionmaker)
 
