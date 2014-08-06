@@ -19,14 +19,20 @@
   ;; "okl-humperdink-logs")
   "okl-danger-dev-mhalverson")
 
+(defn- utc-date-format [timestamp pattern-str]
+  (let [utc (java.util.TimeZone/getTimeZone "UTC")
+        formatter (doto (java.text.SimpleDateFormat. pattern-str)
+                       (.setTimeZone utc))]
+    (.format formatter timestamp)))
+
 (defn- generate-s3-key [route]
   (let [ts (System/currentTimeMillis)
-        year-month-day (.format (java.text.SimpleDateFormat. "yyyy/MM/dd") ts)
+        year-month-day (utc-date-format ts "yyyy/MM/dd")
         envt ;; "{{ ENVT }}"
                 "dev"
         servername (.getHostName (java.net.InetAddress/getLocalHost))
         pid (pid/current)
-        hour-min-sec (.format (java.text.SimpleDateFormat. "hh.mm.ss") ts)]
+        hour-min-sec (utc-date-format ts "HH.mm.ss")]
     (clojure.string/join "/" [year-month-day
 
                               envt
