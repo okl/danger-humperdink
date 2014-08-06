@@ -10,7 +10,7 @@
   (:require [aws.sdk.s3 :as s3]))
 
 
-;; ## Uploading known things
+;; # Uploading known things
 
 (def- cred (s3-cred))
 
@@ -40,14 +40,16 @@
 (defn loaded-to-s3? [key]
   (s3/object-exists? cred bucket key))
 
-(defn upload-to-s3! [vec-of-strings key]
-  (let [string (clojure.string/join "\n" (map str vec-of-strings))]
+(defn upload-to-s3! [vec-of-vals key]
+  (let [string (clojure.string/join "\n" (map str (conj vec-of-vals "")))]
     (log/info (format "Uploading file to key %s" key))
     (if (loaded-to-s3? key)
-      (log/info (format "Abandoning upload of key %s: already got written to s3" key)) ;; XXX is this ok policy?
+      (log/info (format "Abandoning upload of key %s: already got written to s3" key)) ;; XXX is this ok policy? should retry with a different key?
       (s3/put-object cred bucket key string))))
 
-;; ## Deciding when to upload & managing content to upload
+;; # Deciding when to upload & managing content to upload
+
+;; ## Individual buffers
 
 (defprotocol S3BufferP
   (append [this val] "Add a value to the buffer")
@@ -56,32 +58,41 @@
 (defrecord S3Buffer [vector-ref route]
   S3BufferP
   (append [this val]
-    (swap! vector-ref #(conj % val)))
+    (dosync (commute vector-ref conj val)))
   (flush-to-s3 [this]
     ;; XXX write empty files to s3? so we know we're not missing uploads?
     ;;     or don't write if the vector is empty?
     (if (empty? @vector-ref)
       (log/debug "Nothing to flush")
-      (do
-        (upload-to-s3! @vector-ref (generate-s3-key route))
-        (log/debugf "flushed a vector of %d items " (count @vector-ref)m)
-        (swap! vector-ref (constantly []))))))
-
-(def- route=>s3-buffer (atom {}))
+      (let [s3-key (generate-s3-key route)
+            vec-of-vals (dosync (let [v @vector-ref]
+                                  (ref-set vector-ref [])
+                                  v))]
+        (log/debugf "Flushed a vector of %d items " (count vec-of-vals))
+        (upload-to-s3! vec-of-vals s3-key)))))
 
 (defn- make-s3-buffer [route]
-  (->S3Buffer (atom []) route))
+  (->S3Buffer (ref []) route))
+
+;; ## All s3-buffers
+
+(def- route=>s3-buffer (ref {}))
 
 (defn- set-up-flushing-s3-buffer [route & {:keys [flush-period-in-ms]
                                            :or {flush-period-in-ms 60000}}]
-  (swap! route=>s3-buffer #(assoc % route (make-s3-buffer route)))
-  (future (loop []
-            ;;(Thread/sleep flush-period-in-ms) XXX
-            (Thread/sleep 5000)
-            (if (not (contains? @route=>s3-buffer route))
-              "terminated, finally!"
-              (do (flush-to-s3 (get @route=>s3-buffer route))
-                  (recur))))))
+  (let [s3-buffer (make-s3-buffer route)
+        ret-val (dosync
+                 (when-not (contains? @route=>s3-buffer route)
+                   (alter route=>s3-buffer assoc route s3-buffer)))
+        had-to-set-up (not (nil? ret-val))]
+    (when had-to-set-up
+      (future (loop []
+                ;;(Thread/sleep flush-period-in-ms) XXX
+                (Thread/sleep 5000)
+                (if (not (contains? @route=>s3-buffer route))
+                  "terminated, finally!"
+                  (do (flush-to-s3 (get @route=>s3-buffer route))
+                      (recur))))))))
 
 (defn add-to-s3-buffer [val route]
   (when-not (contains? @route=>s3-buffer route)
