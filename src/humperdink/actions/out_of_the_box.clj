@@ -30,6 +30,7 @@
                 [val env]))))
 
 (defactionmaker 'write-to-s3
+  ;; See add-to-s3-buffer docs for default behavior :)
   (fn []
     (->Action (fn [val env]
                 (add-to-s3-buffer val (:route env))

@@ -94,7 +94,13 @@
                   (do (flush-to-s3 (get @route=>s3-buffer route))
                       (recur))))))))
 
-(defn add-to-s3-buffer [val route]
+(defn add-to-s3-buffer
+  "By default, this buffers all writes for a minute at a time;
+it flushes the writes (if any) to timestamped s3 files every 60 seconds or so.
+
+Note that the s3-keys will include the route, e.g. if this action is registered
+under the '/testing/yoda' route, then the s3-key will include 'testing/yoda'."
+  [val route]
   (when-not (contains? @route=>s3-buffer route)
     (set-up-flushing-s3-buffer route))
   (append (get @route=>s3-buffer route) val))
