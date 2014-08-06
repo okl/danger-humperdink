@@ -19,7 +19,8 @@
   (:require [humperdink.actions.write-to-s3 :refer [add-to-s3-buffer]])
   (:require [denormal.core :refer [denormalize-map]])
   (:require [yodaetl.transform :as yoda]
-            [yodaetl-hadoop.config :as yodacfg]))
+            [yodaetl-hadoop.config :as yodacfg])
+  (:require [clojure.java.io :as io]))
 
 ;;
 
@@ -57,7 +58,9 @@
 (defactionmaker 'basic-jaw
   (constantly basic-jaw))
 
-(def- cfg-file (yodacfg/make-config-from-file "/Users/mhalverson/Code/okl/yodaetl/yodaetl/conf/yoda-denorm-config.yml"))
+(def- cfg-file
+  (yodacfg/make-config-from-file
+   (io/resource "conf/yoda-denorm-config.yml")))
 
 (defactionmaker 'yodaetl
   (fn []
