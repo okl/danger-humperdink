@@ -38,8 +38,8 @@
                     (action-maker-registry))
           i (->ActionInput 42 {})
           o (invoke a i)]
-      (is (= o (list #humperdink.action.ActionOutput{:output "42 nevergonnagiveyouup",
-                                                     :env {}}))))))
+      (is (= o
+             (list (->ActionOutput "42 nevergonnagiveyouup" {})))))))
 
 ;; Parallel action
 
