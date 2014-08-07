@@ -78,6 +78,26 @@
   [["/foo" => basic-jaw]
    ["/yoda" => yodaetl]])
 
+;; (defn wrap-correct-content-type
+;;   "This is a something of a hack.
+;;
+;; The default content-type is NOT text/plain or application/json,
+;; but rather application/www-form-urlencoded, which causes the body stream to
+;; be automatically parsed into a map of parameters, thus consuming the stream...
+;; so when the app tries to read it in order to log it, it's already been consumed
+;; and there's nothing left to read and you get the empty string.
+;;
+;; In theory, people will hit this API with the correct content-type (probably
+;; application/json or text/plain). If they're not, and you want a server-side
+;; hack to accommodate them in their unhelpfulness, you can enable this by
+;; uncommenting the call to (wrap-correct-content-type) in the app def below."
+;;   [handler]
+;;   (fn [request]
+;;     (if (and (= "/log" (:uri request))
+;;              (= :post (:request-method request)))
+;;       (handler (assoc request :content-type "text/plain"))
+;;       (handler request))))
+
 ;; There exists a route->action table
 ;; Interpreter has access to master route->action table
 ;;  -> first step is generic: look up action for route
